@@ -4,4 +4,5 @@
 import padro2csv
 
 reload(padro2csv)
-padro2csv.padro2csv("fitxer_padro")
+padro2csv.main()
+#padro2csv.padro2csv("aa.txt")
