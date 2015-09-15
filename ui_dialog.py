@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'padrohabitants_dialog.ui'
 #
-# Created: Fri Aug 07 16:22:56 2015
+# Created: Tue Sep 15 18:24:08 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,9 +26,9 @@ except AttributeError:
 class Ui_padroHabitantsDialog(object):
     def setupUi(self, padroHabitantsDialog):
         padroHabitantsDialog.setObjectName(_fromUtf8("padroHabitantsDialog"))
-        padroHabitantsDialog.resize(475, 161)
+        padroHabitantsDialog.resize(475, 204)
         self.btnAccept = QtGui.QPushButton(padroHabitantsDialog)
-        self.btnAccept.setGeometry(QtCore.QRect(390, 120, 71, 23))
+        self.btnAccept.setGeometry(QtCore.QRect(390, 160, 71, 23))
         self.btnAccept.setObjectName(_fromUtf8("btnAccept"))
         self.btnSelectInput = QtGui.QPushButton(padroHabitantsDialog)
         self.btnSelectInput.setGeometry(QtCore.QRect(390, 25, 71, 23))
@@ -52,6 +52,18 @@ class Ui_padroHabitantsDialog(object):
         self.txtOutputFilePath.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.txtOutputFilePath.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.txtOutputFilePath.setObjectName(_fromUtf8("txtOutputFilePath"))
+        self.cboConnection = QtGui.QComboBox(padroHabitantsDialog)
+        self.cboConnection.setGeometry(QtCore.QRect(100, 120, 191, 22))
+        self.cboConnection.setObjectName(_fromUtf8("cboConnection"))
+        self.label_3 = QtGui.QLabel(padroHabitantsDialog)
+        self.label_3.setGeometry(QtCore.QRect(10, 120, 91, 21))
+        self.label_3.setObjectName(_fromUtf8("label_3"))
+        self.label_4 = QtGui.QLabel(padroHabitantsDialog)
+        self.label_4.setGeometry(QtCore.QRect(10, 160, 91, 21))
+        self.label_4.setObjectName(_fromUtf8("label_4"))
+        self.txtTableName = QtGui.QLineEdit(padroHabitantsDialog)
+        self.txtTableName.setGeometry(QtCore.QRect(100, 160, 191, 20))
+        self.txtTableName.setObjectName(_fromUtf8("txtTableName"))
 
         self.retranslateUi(padroHabitantsDialog)
         QtCore.QMetaObject.connectSlotsByName(padroHabitantsDialog)
@@ -73,4 +85,6 @@ class Ui_padroHabitantsDialog(object):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\"><br /></p></body></html>", None))
+        self.label_3.setText(_translate("padroHabitantsDialog", "Connexió:", None))
+        self.label_4.setText(_translate("padroHabitantsDialog", "Nom taula:", None))
 

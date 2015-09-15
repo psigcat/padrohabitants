@@ -26,12 +26,16 @@ def select_input_file():
     dlg.ui.txtInputFilePath.setText(fileIn)
     fileOut = fileIn.replace(".txt", ".csv")
     dlg.ui.txtOutputFilePath.setText(fileOut)
+    fileName = os.path.basename(fileOut)
+    dlg.ui.txtTableName.setText(fileName[:-4])
 
 
 def select_output_file():
     os.chdir(os.getcwd())
     fileOut = QFileDialog.getSaveFileName(None, "Select output file", "", '*.csv')
     dlg.ui.txtOutputFilePath.setText(fileOut)
+    fileName = os.path.basename(fileOut)
+    dlg.ui.txtTableName.setText( fileName[:-4])
 
 
 def process():
