@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'padrohabitants_dialog.ui'
 #
-# Created: Tue Sep 15 18:24:08 2015
+# Created: Tue Sep 15 19:59:28 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,9 +27,9 @@ class Ui_padroHabitantsDialog(object):
     def setupUi(self, padroHabitantsDialog):
         padroHabitantsDialog.setObjectName(_fromUtf8("padroHabitantsDialog"))
         padroHabitantsDialog.resize(475, 204)
-        self.btnAccept = QtGui.QPushButton(padroHabitantsDialog)
-        self.btnAccept.setGeometry(QtCore.QRect(390, 160, 71, 23))
-        self.btnAccept.setObjectName(_fromUtf8("btnAccept"))
+        self.btnCsvToPg = QtGui.QPushButton(padroHabitantsDialog)
+        self.btnCsvToPg.setGeometry(QtCore.QRect(370, 120, 91, 23))
+        self.btnCsvToPg.setObjectName(_fromUtf8("btnCsvToPg"))
         self.btnSelectInput = QtGui.QPushButton(padroHabitantsDialog)
         self.btnSelectInput.setGeometry(QtCore.QRect(390, 25, 71, 23))
         self.btnSelectInput.setObjectName(_fromUtf8("btnSelectInput"))
@@ -53,7 +53,7 @@ class Ui_padroHabitantsDialog(object):
         self.txtOutputFilePath.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.txtOutputFilePath.setObjectName(_fromUtf8("txtOutputFilePath"))
         self.cboConnection = QtGui.QComboBox(padroHabitantsDialog)
-        self.cboConnection.setGeometry(QtCore.QRect(100, 120, 191, 22))
+        self.cboConnection.setGeometry(QtCore.QRect(100, 120, 151, 22))
         self.cboConnection.setObjectName(_fromUtf8("cboConnection"))
         self.label_3 = QtGui.QLabel(padroHabitantsDialog)
         self.label_3.setGeometry(QtCore.QRect(10, 120, 91, 21))
@@ -62,15 +62,21 @@ class Ui_padroHabitantsDialog(object):
         self.label_4.setGeometry(QtCore.QRect(10, 160, 91, 21))
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.txtTableName = QtGui.QLineEdit(padroHabitantsDialog)
-        self.txtTableName.setGeometry(QtCore.QRect(100, 160, 191, 20))
+        self.txtTableName.setGeometry(QtCore.QRect(100, 160, 151, 20))
         self.txtTableName.setObjectName(_fromUtf8("txtTableName"))
+        self.btnTxtToCsv = QtGui.QPushButton(padroHabitantsDialog)
+        self.btnTxtToCsv.setGeometry(QtCore.QRect(270, 120, 91, 23))
+        self.btnTxtToCsv.setObjectName(_fromUtf8("btnTxtToCsv"))
+        self.btnAccept = QtGui.QPushButton(padroHabitantsDialog)
+        self.btnAccept.setGeometry(QtCore.QRect(390, 160, 71, 23))
+        self.btnAccept.setObjectName(_fromUtf8("btnAccept"))
 
         self.retranslateUi(padroHabitantsDialog)
         QtCore.QMetaObject.connectSlotsByName(padroHabitantsDialog)
 
     def retranslateUi(self, padroHabitantsDialog):
         padroHabitantsDialog.setWindowTitle(_translate("padroHabitantsDialog", "Dialog", None))
-        self.btnAccept.setText(_translate("padroHabitantsDialog", "Aceptar", None))
+        self.btnCsvToPg.setText(_translate("padroHabitantsDialog", "CSV to PostGIS", None))
         self.btnSelectInput.setText(_translate("padroHabitantsDialog", "...", None))
         self.label.setText(_translate("padroHabitantsDialog", "Fitxer entrada:", None))
         self.label_2.setText(_translate("padroHabitantsDialog", "Fitxer sortida:", None))
@@ -87,4 +93,6 @@ class Ui_padroHabitantsDialog(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\"><br /></p></body></html>", None))
         self.label_3.setText(_translate("padroHabitantsDialog", "Connexió:", None))
         self.label_4.setText(_translate("padroHabitantsDialog", "Nom taula:", None))
+        self.btnTxtToCsv.setText(_translate("padroHabitantsDialog", "TXT to CSV", None))
+        self.btnAccept.setText(_translate("padroHabitantsDialog", "Aceptar", None))
 

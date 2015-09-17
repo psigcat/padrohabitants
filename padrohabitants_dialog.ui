@@ -13,17 +13,17 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QPushButton" name="btnAccept">
+  <widget class="QPushButton" name="btnCsvToPg">
    <property name="geometry">
     <rect>
-     <x>390</x>
-     <y>160</y>
-     <width>71</width>
+     <x>370</x>
+     <y>120</y>
+     <width>91</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>Aceptar</string>
+    <string>CSV to PostGIS</string>
    </property>
   </widget>
   <widget class="QPushButton" name="btnSelectInput">
@@ -129,7 +129,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>100</x>
      <y>120</y>
-     <width>191</width>
+     <width>151</width>
      <height>22</height>
     </rect>
    </property>
@@ -165,9 +165,35 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>100</x>
      <y>160</y>
-     <width>191</width>
+     <width>151</width>
      <height>20</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnTxtToCsv">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>120</y>
+     <width>91</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TXT to CSV</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnAccept">
+   <property name="geometry">
+    <rect>
+     <x>390</x>
+     <y>160</y>
+     <width>71</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Aceptar</string>
    </property>
   </widget>
  </widget>
