@@ -14,41 +14,62 @@ from padrohabitants_dialog import PadroHabitantsDialog
 
 def main():
     
-    # Ask user to select input file
-    global dlg
+    # Open dialog
+    global dlg, settings, SCHEMA_NAME
+    SCHEMA_NAME = "data"
     dlg = PadroHabitantsDialog()
     dlg.show()
+       
+    # Load local settings of the plugin
+    settingFile = os.path.join(os.getcwd(), 'config', 'padrohabitants.config')
+    settings = QSettings(settingFile, QSettings.IniFormat)
     
-    dlg.ui.btnAccept.setEnabled(False)
-    fill_combo()
-        
+    # Init configuration
+    init_config()
+    
+    # Set signals
     dlg.ui.btnSelectInput.clicked.connect(select_input_file)
     dlg.ui.btnSelectOutput.clicked.connect(select_output_file)
     dlg.ui.cboConnection.currentIndexChanged.connect(connection_changed)
-    dlg.ui.btnTxtToCsv.clicked.connect(process)
-    dlg.ui.btnCsvToPg.clicked.connect(csv2postgis)
     dlg.ui.btnAccept.clicked.connect(process)
+    dlg.ui.btnTxtToCsv.setVisible(False)
+    dlg.ui.btnCsvToPg.setVisible(False)
 
 
 def get_connections():
+    
     # get the list of current connections
     conn_list = []
     conn_list.append('')
-    settings = QSettings()
+    qgisSettings = QSettings()
     root = '/PostgreSQL/connections'
-    settings.beginGroup(root)
-    for name in settings.childGroups():
+    qgisSettings.beginGroup(root)
+    for name in qgisSettings.childGroups():
         conn_list.append(name)
-        settings.endGroup()
+        qgisSettings.endGroup()
     return conn_list
     
     
-def fill_combo():
+def init_config():
+    
+    # Fill connections combo
     conn_list = get_connections()
     dlg.ui.cboConnection.addItems(conn_list)
+        
+    # Get txt file path, csv file path, db connection name, table name
+    TXT_NAME = settings.value('db/TXT_NAME', '')
+    dlg.ui.txtInputFilePath.setText(TXT_NAME)
+    CSV_NAME = settings.value('db/CSV_NAME', '')
+    dlg.ui.txtOutputFilePath.setText(CSV_NAME)
+    CONNECTION_NAME = settings.value('db/CONNECTION_NAME', '')
+    index = dlg.ui.cboConnection.findText(CONNECTION_NAME)
+    dlg.ui.cboConnection.setCurrentIndex(index)
+    TABLE_NAME = settings.value('db/TABLE_NAME', '')
+    dlg.ui.txtTableName.setText(TABLE_NAME)
     
     
 def open_connection(name):
+    
     # look for connection data in QGIS configration
     # get connection data
     qgisSettings = QSettings()
@@ -105,13 +126,15 @@ def open_connection(name):
     
 # Signals
 def connection_changed():
+    
+    # Try to connect. If failed disable Accept button    
     value = dlg.ui.cboConnection.currentText()
-    # Try to connect. If failed disable Accept button
     status = open_connection(value)
     dlg.ui.btnAccept.setEnabled(status)
     
     
 def select_input_file():
+    
     os.chdir(os.getcwd())
     fileIn = QFileDialog.getOpenFileName(None, "Select input file", "", '*.txt')
     dlg.ui.txtInputFilePath.setText(fileIn)
@@ -137,6 +160,8 @@ def process():
         msg = "El fitxer d'entrada indicat no existeix: \n"+fileIn
         QMessageBox.warning(None, "Fitxer no existeix", msg)
         return
+    
+    # Check if we have selected output file
     fileOut = dlg.ui.txtOutputFilePath.toPlainText()
     if fileOut == '':
         msg = "Cal especificar un fitxer de sortida"
@@ -144,6 +169,7 @@ def process():
         return
     
     padro2csv(fileIn, fileOut)
+    csv2postgis()
     
     
 def padro2csv(fileIn, fileOut=None):
@@ -151,7 +177,7 @@ def padro2csv(fileIn, fileOut=None):
     # Open file for read txt (from padro habitants)
     rf = open(fileIn)
     
-    askQuestion = True
+    askQuestion = False
     if fileOut == None:
         askQuestion = False
         fileOut = fileIn.replace(".txt", ".csv")
@@ -209,26 +235,31 @@ def csv2postgis():
         return
         
     # Check if tableName already exists
+    # We deal with schema name and ""
     tableExists = False
-    sql = "SELECT * FROM pg_tables WHERE tablename = '"+tableName+"'"
+    aux = tableName
+    index = aux.find(".")
+    if index > -1:
+        aux = aux[index+1:]
+        print aux
+    aux = aux.replace('"', '')
+    sql = "SELECT * FROM pg_tables WHERE tablename = '"+aux+"'"
     cursor.execute(sql)
     row = cursor.fetchone()
     if row:
         tableExists = True
-        msg = 'Table {} already exists. Do you want to overwrite it?'.format(tableName)
-        reply = QMessageBox.question(None, 'Obrir fitxer?', msg, QMessageBox.Yes, QMessageBox.No)
+        msg = 'La taula {} ja existeix. Vol sobreescriure-la?'.format(tableName)
+        reply = QMessageBox.question(None, None, msg, QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.No:
             return False
         
-    # TODO: Get schema name
-    schemaName = "data"
-        
+    # Escape table name
     if '"' not in tableName:
         tableName = '"'+tableName+'"'
         
     # Prefix schema only if not set in tableName
     if '.' not in tableName:
-        tableName = schemaName+"."+tableName
+        tableName = SCHEMA_NAME+"."+tableName
         
     # Create new table
     if not tableExists:
@@ -250,7 +281,6 @@ def csv2postgis():
     # Open csv file for read and copy into database
     rf = open(fileCsv)
     sql = "COPY "+tableName+" FROM STDIN WITH CSV HEADER DELIMITER AS ','"
-
     try:
         cursor.copy_expert(sql, rf)
         conn.commit()
@@ -259,6 +289,15 @@ def csv2postgis():
         QMessageBox.warning(None, "CSV import error", message)
         conn.rollback()
         return False
+        
+    # Save settings
+    settings.setValue("db/CONNECTION_NAME", dlg.ui.cboConnection.currentText())
+    settings.setValue("db/TABLE_NAME", tableName)
+    settings.setValue("db/TXT_NAME", dlg.ui.txtInputFilePath.toPlainText())
+    settings.setValue("db/CSV_NAME", dlg.ui.txtOutputFilePath.toPlainText())    
+    
+    # Final message
+    QMessageBox.information(None, u"Fi procés", u"Procés finalitzat correctament")
 
     
 # Execute script only in QGIS Python console
