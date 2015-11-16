@@ -3,6 +3,7 @@
 import sys
 import os
 import csv
+from qgis.core import QgsDataSourceURI
 from PyQt4.QtGui import QFileDialog, QInputDialog, QMessageBox
 from PyQt4.QtCore import QSettings
 import psycopg2
@@ -149,7 +150,7 @@ def select_output_file():
     fileOut = QFileDialog.getSaveFileName(None, "Select output file", "", '*.csv')
     dlg.ui.txtOutputFilePath.setText(fileOut)
     fileName = os.path.basename(fileOut)
-    dlg.ui.txtTableName.setText( fileName[:-4])
+    dlg.ui.txtTableName.setText(fileName[:-4])
 
 
 def process():
@@ -168,7 +169,10 @@ def process():
         QMessageBox.warning(None, "Fitxer de sortida", msg)
         return
     
+    # TXT file to CSV
     padro2csv(fileIn, fileOut)
+    
+    # CSV file to PostGIS
     csv2postgis()
     
     
@@ -188,12 +192,13 @@ def padro2csv(fileIn, fileOut=None):
         writer.writerow(zip(*padro_estruc[1])[3])
         # read lines from txt
         for line in rf.readlines():
+            line = line.decode("UTF8")
             row = []
             # Iterate over all features
             for campos in padro_estruc[1]:
                 ini = campos[0]-1 # offset
                 fin = ini + campos[1] # longitud
-                valor = line[ini:fin].strip() # valor
+                valor = line[ini:fin].strip().encode("UTF8") # valor
                 row.append(valor)
             # write text into csv file
             writer = csv.writer(wf)
@@ -201,8 +206,8 @@ def padro2csv(fileIn, fileOut=None):
         # close input file handle
         rf.close()
 
-	# close output file handle
-	wf.close()
+    # close output file handle
+    wf.close()
 
     # Final message
     if askQuestion:
