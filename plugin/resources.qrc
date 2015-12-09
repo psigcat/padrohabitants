@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/PadroHabitants" >
+        <file>icon_padrohabitants.png</file>
+    </qresource>
+</RCC>

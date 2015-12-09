@@ -1,7 +1,13 @@
 # Project
 *.bat
-*.qgs
-*.csv
+test/*
+
+# Eclipse
+.project
+.pydevproject
+.settings/
+*.psproj
+_build_*.*
 
 # temp files
 *~
@@ -27,5 +33,4 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-
 
