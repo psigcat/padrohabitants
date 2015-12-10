@@ -3,14 +3,14 @@
 import sys
 import os
 import csv
-from qgis.core import QgsDataSourceURI
+from qgis.core import QgsDataSourceURI, QgsCredentials
 from PyQt4.QtGui import QFileDialog, QInputDialog, QMessageBox
 from PyQt4.QtCore import QSettings
 import psycopg2
 import psycopg2.extensions
 import psycopg2.extras
 from padro_estruc import padro_estruc
-from padrohabitants_dialog import PadroHabitantsDialog
+from ui.padrohabitants_dialog import PadroHabitantsDialog
 
 
 def main():
@@ -29,12 +29,12 @@ def main():
     init_config()
     
     # Set signals
-    dlg.ui.btnSelectInput.clicked.connect(select_input_file)
-    dlg.ui.btnSelectOutput.clicked.connect(select_output_file)
-    dlg.ui.cboConnection.currentIndexChanged.connect(connection_changed)
-    dlg.ui.btnAccept.clicked.connect(process)
-    dlg.ui.btnTxtToCsv.setVisible(False)
-    dlg.ui.btnCsvToPg.setVisible(False)
+    dlg.btnSelectInput.clicked.connect(select_input_file)
+    dlg.btnSelectOutput.clicked.connect(select_output_file)
+    dlg.cboConnection.currentIndexChanged.connect(connection_changed)
+    dlg.btnAccept.clicked.connect(process)
+    dlg.btnTxtToCsv.setVisible(False)
+    dlg.btnCsvToPg.setVisible(False)
 
 
 def get_connections():
@@ -55,18 +55,18 @@ def init_config():
     
     # Fill connections combo
     conn_list = get_connections()
-    dlg.ui.cboConnection.addItems(conn_list)
+    dlg.cboConnection.addItems(conn_list)
         
     # Get txt file path, csv file path, db connection name, table name
     TXT_NAME = settings.value('db/TXT_NAME', '')
-    dlg.ui.txtInputFilePath.setText(TXT_NAME)
+    dlg.txtInputFilePath.setText(TXT_NAME)
     CSV_NAME = settings.value('db/CSV_NAME', '')
-    dlg.ui.txtOutputFilePath.setText(CSV_NAME)
+    dlg.txtOutputFilePath.setText(CSV_NAME)
     CONNECTION_NAME = settings.value('db/CONNECTION_NAME', '')
-    index = dlg.ui.cboConnection.findText(CONNECTION_NAME)
-    dlg.ui.cboConnection.setCurrentIndex(index)
+    index = dlg.cboConnection.findText(CONNECTION_NAME)
+    dlg.cboConnection.setCurrentIndex(index)
     TABLE_NAME = settings.value('db/TABLE_NAME', '')
-    dlg.ui.txtTableName.setText(TABLE_NAME)
+    dlg.txtTableName.setText(TABLE_NAME)
     
     
 def open_connection(name):
@@ -129,41 +129,41 @@ def open_connection(name):
 def connection_changed():
     
     # Try to connect. If failed disable Accept button    
-    value = dlg.ui.cboConnection.currentText()
+    value = dlg.cboConnection.currentText()
     status = open_connection(value)
-    dlg.ui.btnAccept.setEnabled(status)
+    dlg.btnAccept.setEnabled(status)
     
     
 def select_input_file():
     
     os.chdir(os.getcwd())
     fileIn = QFileDialog.getOpenFileName(None, "Select input file", "", '*.txt')
-    dlg.ui.txtInputFilePath.setText(fileIn)
+    dlg.txtInputFilePath.setText(fileIn)
     fileOut = fileIn.replace(".txt", ".csv")
-    dlg.ui.txtOutputFilePath.setText(fileOut)
+    dlg.txtOutputFilePath.setText(fileOut)
     fileName = os.path.basename(fileOut)
-    dlg.ui.txtTableName.setText(fileName[:-4])
+    dlg.txtTableName.setText(fileName[:-4])
 
 
 def select_output_file():
     os.chdir(os.getcwd())
     fileOut = QFileDialog.getSaveFileName(None, "Select output file", "", '*.csv')
-    dlg.ui.txtOutputFilePath.setText(fileOut)
+    dlg.txtOutputFilePath.setText(fileOut)
     fileName = os.path.basename(fileOut)
-    dlg.ui.txtTableName.setText(fileName[:-4])
+    dlg.txtTableName.setText(fileName[:-4])
 
 
 def process():
 
     # Check if input file exists
-    fileIn = dlg.ui.txtInputFilePath.toPlainText()
+    fileIn = dlg.txtInputFilePath.toPlainText()
     if not os.path.isfile(fileIn):
         msg = "El fitxer d'entrada indicat no existeix: \n"+fileIn
         QMessageBox.warning(None, "Fitxer no existeix", msg)
         return
     
     # Check if we have selected output file
-    fileOut = dlg.ui.txtOutputFilePath.toPlainText()
+    fileOut = dlg.txtOutputFilePath.toPlainText()
     if fileOut == '':
         msg = "Cal especificar un fitxer de sortida"
         QMessageBox.warning(None, "Fitxer de sortida", msg)
@@ -220,7 +220,7 @@ def padro2csv(fileIn, fileOut=None):
 def csv2postgis():
     
     # Get CSV file
-    fileCsv = dlg.ui.txtOutputFilePath.toPlainText()
+    fileCsv = dlg.txtOutputFilePath.toPlainText()
     if fileCsv == '':
         msg = "Cal especificar el fitxer CSV"
         QMessageBox.warning(None, "Fitxer CSV", msg)
@@ -233,7 +233,7 @@ def csv2postgis():
         return
     
     # Get table name to generate
-    tableName = dlg.ui.txtTableName.text()
+    tableName = dlg.txtTableName.text()
     if tableName == '':
         msg = "Cal especificar nom de la taula a generar"
         QMessageBox.warning(None, "PostGIS", msg)
@@ -296,10 +296,10 @@ def csv2postgis():
         return False
         
     # Save settings
-    settings.setValue("db/CONNECTION_NAME", dlg.ui.cboConnection.currentText())
+    settings.setValue("db/CONNECTION_NAME", dlg.cboConnection.currentText())
     settings.setValue("db/TABLE_NAME", tableName)
-    settings.setValue("db/TXT_NAME", dlg.ui.txtInputFilePath.toPlainText())
-    settings.setValue("db/CSV_NAME", dlg.ui.txtOutputFilePath.toPlainText())    
+    settings.setValue("db/TXT_NAME", dlg.txtInputFilePath.toPlainText())
+    settings.setValue("db/CSV_NAME", dlg.txtOutputFilePath.toPlainText())    
     
     # Final message
     QMessageBox.information(None, u"Fi procés", u"Procés finalitzat correctament")

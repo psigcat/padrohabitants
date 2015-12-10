@@ -22,12 +22,10 @@ from qgis.utils import active_plugins
 from qgis.gui import (QgsMessageBar)
 from qgis.core import (QgsGeometry, QgsLogger)
 from PyQt4.QtCore import * # @UnusedWildImport
-from PyQt4.QtGui import * # @UnusedWildImport
+from PyQt4.QtGui import *  # @UnusedWildImport
 import os.path
 import sys  
-import resources_rc
-
-#from info_plus_point import InfoPlusPoint
+import resources_rc        # @UnusedWildImport
 import padro2csv
 
 
@@ -76,7 +74,7 @@ class PadroHabitants(QObject):
         ''' Load plugin settings
         '''
         # Create own plugin toolbar or not?
-        self.pluginToolbarEnabled = bool(int(self.settings.value('status/pluginToolbarEnabled', 1)))
+        self.pluginToolbarEnabled = bool(int(self.settings.value('status/pluginToolbarEnabled', 0)))
         if self.pluginToolbarEnabled:
             self.toolbar = self.iface.addToolBar(u'PadroHabitants')
             self.toolbar.setObjectName(u'PadroHabitants')
@@ -114,8 +112,6 @@ class PadroHabitants(QObject):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
         icon_path = ':/plugins/PadroHabitants/icon_padrohabitants.png'
         self.actionPoint = self.createAction(icon_path, self.tr(u'CSV to PostGIS'), self.run, self.iface.mainWindow(), self.pluginToolbarEnabled)
-        self.toolPoint = InfoPlusPoint(self.iface.mapCanvas(), self.actionPoint, self.settings)
-        self.toolPoint.setInterface(self.iface)              
     
     
     def unload(self):
