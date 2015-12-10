@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>475</width>
-    <height>204</height>
+    <height>242</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -151,7 +151,7 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>160</y>
+     <y>200</y>
      <width>91</width>
      <height>21</height>
     </rect>
@@ -164,7 +164,7 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>100</x>
-     <y>160</y>
+     <y>200</y>
      <width>151</width>
      <height>20</height>
     </rect>
@@ -187,13 +187,36 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>390</x>
-     <y>160</y>
+     <y>190</y>
      <width>71</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
     <string>Aceptar</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>160</y>
+     <width>91</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Esquema:</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="cboSchema">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>160</y>
+     <width>151</width>
+     <height>22</height>
+    </rect>
    </property>
   </widget>
  </widget>

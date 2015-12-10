@@ -127,9 +127,5 @@ class PadroHabitants(QObject):
                         
     
     def run(self):
-        print "HELLO"
         reload(padro2csv)
-        padro2csv.main()
-        #padro2csv.padro2csv("aa.txt")        
-
-
+        padro2csv.main(self.plugin_dir)

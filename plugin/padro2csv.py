@@ -4,7 +4,7 @@ import sys
 import os
 import csv
 from qgis.core import QgsDataSourceURI, QgsCredentials
-from PyQt4.QtGui import QFileDialog, QInputDialog, QMessageBox
+from PyQt4.QtGui import QFileDialog, QInputDialog, QMessageBox, QComboBox
 from PyQt4.QtCore import QSettings
 import psycopg2
 import psycopg2.extensions
@@ -13,33 +13,25 @@ from padro_estruc import padro_estruc
 from ui.padrohabitants_dialog import PadroHabitantsDialog
 
 
-def main():
+def main(plugin_dir):
+    
+    global dlg, settings
     
     # Open dialog
-    global dlg, settings, SCHEMA_NAME
-    SCHEMA_NAME = "data"
     dlg = PadroHabitantsDialog()
     dlg.show()
        
     # Load local settings of the plugin
-    settingFile = os.path.join(os.getcwd(), 'config', 'padrohabitants.config')
-    settings = QSettings(settingFile, QSettings.IniFormat)
+    setting_path = os.path.join(plugin_dir, 'config', 'padrohabitants.config')    
+    settings = QSettings(setting_path, QSettings.IniFormat)
     
     # Init configuration
     init_config()
-    
-    # Set signals
-    dlg.btnSelectInput.clicked.connect(select_input_file)
-    dlg.btnSelectOutput.clicked.connect(select_output_file)
-    dlg.cboConnection.currentIndexChanged.connect(connection_changed)
-    dlg.btnAccept.clicked.connect(process)
-    dlg.btnTxtToCsv.setVisible(False)
-    dlg.btnCsvToPg.setVisible(False)
 
 
 def get_connections():
     
-    # get the list of current connections
+    # Get the list of current connections
     conn_list = []
     conn_list.append('')
     qgisSettings = QSettings()
@@ -51,12 +43,24 @@ def get_connections():
     return conn_list
     
     
-def init_config():
+def get_schemas():
     
+    sql = "SELECT schema_name FROM information_schema.schemata WHERE schema_name <> 'information_schema' AND schema_name !~ E'^pg_' AND schema_name <> 'drivers' AND schema_name <> 'public' AND schema_name <> 'topology' ORDER BY schema_name" 
+    elem = dlg.findChild(QComboBox, "cboSchema")
+    elem.clear()    
+    elem.addItem("")    
+    cursor.execute(sql)
+    rows = cursor.fetchall()
+    for row in rows:
+        elem.addItem(row[0])        
+    
+    
+def init_config():
+           
     # Fill connections combo
     conn_list = get_connections()
     dlg.cboConnection.addItems(conn_list)
-        
+            
     # Get txt file path, csv file path, db connection name, table name
     TXT_NAME = settings.value('db/TXT_NAME', '')
     dlg.txtInputFilePath.setText(TXT_NAME)
@@ -68,6 +72,20 @@ def init_config():
     TABLE_NAME = settings.value('db/TABLE_NAME', '')
     dlg.txtTableName.setText(TABLE_NAME)
     
+    # Set signals
+    dlg.btnSelectInput.clicked.connect(select_input_file)
+    dlg.btnSelectOutput.clicked.connect(select_output_file)
+    dlg.cboConnection.currentIndexChanged.connect(connection_changed)
+    dlg.btnAccept.clicked.connect(process)
+    dlg.btnTxtToCsv.setVisible(False)
+    dlg.btnCsvToPg.setVisible(False)    
+    
+    if index != -1:
+        connection_changed()
+        schema_name = settings.value('db/SCHEMA_NAME', '')
+        index = dlg.cboSchema.findText(schema_name)
+        dlg.cboSchema.setCurrentIndex(index)    
+        
     
 def open_connection(name):
     
@@ -129,13 +147,16 @@ def open_connection(name):
 def connection_changed():
     
     # Try to connect. If failed disable Accept button    
-    value = dlg.cboConnection.currentText()
-    status = open_connection(value)
+    conn_name = dlg.cboConnection.currentText()
+    status = open_connection(conn_name)
     dlg.btnAccept.setEnabled(status)
+    
+    # Fill schemas combo
+    if status:
+        get_schemas()  
     
     
 def select_input_file():
-    
     os.chdir(os.getcwd())
     fileIn = QFileDialog.getOpenFileName(None, "Select input file", "", '*.txt')
     dlg.txtInputFilePath.setText(fileIn)
@@ -220,86 +241,87 @@ def padro2csv(fileIn, fileOut=None):
 def csv2postgis():
     
     # Get CSV file
-    fileCsv = dlg.txtOutputFilePath.toPlainText()
-    if fileCsv == '':
+    file_csv = dlg.txtOutputFilePath.toPlainText()
+    if file_csv == '':
         msg = "Cal especificar el fitxer CSV"
         QMessageBox.warning(None, "Fitxer CSV", msg)
         return
         
     # Check if CSV file exists
-    if not os.path.isfile(fileCsv):
-        msg = "El fitxer especificat no existeix:\n"+fileCsv
+    if not os.path.isfile(file_csv):
+        msg = "El fitxer especificat no existeix:\n"+file_csv
         QMessageBox.warning(None, "Fitxer CSV", msg)
         return
     
+    # Get schema name
+    schema_name = dlg.cboSchema.currentText()  
+    if schema_name == '':
+        msg = "Cal seleccionar un esquema"
+        QMessageBox.warning(None, "PostGIS", msg)
+        return         
+        
     # Get table name to generate
-    tableName = dlg.txtTableName.text()
-    if tableName == '':
+    table_name = dlg.txtTableName.text()
+    if table_name == '':
         msg = "Cal especificar nom de la taula a generar"
         QMessageBox.warning(None, "PostGIS", msg)
         return
         
-    # Check if tableName already exists
-    # We deal with schema name and ""
-    tableExists = False
-    aux = tableName
-    index = aux.find(".")
-    if index > -1:
-        aux = aux[index+1:]
-        print aux
-    aux = aux.replace('"', '')
-    sql = "SELECT * FROM pg_tables WHERE tablename = '"+aux+"'"
+    # Check if table_name already exists in the selected schema
+    table_exists = False    
+    full_table_name = schema_name+"."+table_name    
+    sql = "SELECT * FROM pg_tables WHERE schemaname = '"+schema_name+"' AND tablename = '"+table_name+"'"
     cursor.execute(sql)
     row = cursor.fetchone()
     if row:
-        tableExists = True
-        msg = 'La taula {} ja existeix. Vol sobreescriure-la?'.format(tableName)
+        table_exists = True
+        msg = 'La taula {} ja existeix. Vol sobreescriure-la?'.format(full_table_name)
         reply = QMessageBox.question(None, None, msg, QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.No:
-            return False
+            return
         
-    # Escape table name
-    if '"' not in tableName:
-        tableName = '"'+tableName+'"'
+    # Save settings (before processing)
+    settings.setValue("db/CONNECTION_NAME", dlg.cboConnection.currentText())
+    settings.setValue("db/SCHEMA_NAME", schema_name)
+    settings.setValue("db/TABLE_NAME", table_name)
+    settings.setValue("db/TXT_NAME", dlg.txtInputFilePath.toPlainText())
+    settings.setValue("db/CSV_NAME", dlg.txtOutputFilePath.toPlainText())            
         
-    # Prefix schema only if not set in tableName
-    if '.' not in tableName:
-        tableName = SCHEMA_NAME+"."+tableName
-        
+    # Escape schema and table name
+    if '"' not in schema_name:
+        schema_name = '"'+schema_name+'"'
+    if '"' not in table_name:
+        table_name = '"'+table_name+'"'
+    full_table_name = schema_name+"."+table_name  
+            
     # Create new table
-    if not tableExists:
-        sql = "CREATE TABLE "+tableName+" ("
+    if not table_exists:
+        sql = "CREATE TABLE "+full_table_name+" ("
         sql2= "codi_provincia text, codi_municipi text, nom text, part_cognom1 text, cognom1 text, part_cognom2 text, cognom2 text, neix_codi_provincia text, neix_codi_municipi text, neix_any text, neix_mes text, neix_dia text, tipus_doc text, letra_estrager text, doc_identitat text, passaport text, nia text, nie text, variacio_any text, variacio_mes text, variacio_dia  text, districte text, seccio text, codi_entitat_colectiva text, codi_entitat_singular text, codi_digit_control text, codi_ncli_disseminat text, nom_entitat_singular text, nom_nucli_disseminat text, codi_via text, tipus_via text, nom_via text, altres text, tipus_numero text, numero text, numero_superior text, punt_quilometric text, hm text, bloc text, escala text, planta text, porta text, tipus_domicili text, full_padronal text, sexe text, nivell_estudis text, pais_nacionalitat text, procedencia_codi_provincia text, procedencia_codi_municipi text, procedencia_codi_consolat text)"
         sql = sql + sql2
         try:
             cursor.execute(sql)
             conn.commit()
         except Exception as ex:
-            message = 'Cannot create table {} for reason:\n {} '.format(tableName, str(ex))
+            message = 'Cannot create table {} for reason:\n {} '.format(table_name, str(ex))
             QMessageBox.warning(None, "CSV import error", message)
             conn.rollback()
             return False
     else:
-        sql = "DELETE FROM "+tableName
+        sql = "DELETE FROM "+full_table_name
         cursor.execute(sql)
     
     # Open csv file for read and copy into database
-    rf = open(fileCsv)
-    sql = "COPY "+tableName+" FROM STDIN WITH CSV HEADER DELIMITER AS ','"
+    rf = open(file_csv)
+    sql = "COPY "+full_table_name+" FROM STDIN WITH CSV HEADER DELIMITER AS ','"
     try:
         cursor.copy_expert(sql, rf)
         conn.commit()
     except Exception as ex:
-        message = 'Cannot import CSV into table {} for reason:\n {} '.format(tableName, str(ex))
+        message = 'Cannot import CSV into table {} for reason:\n {} '.format(full_table_name, str(ex))
         QMessageBox.warning(None, "CSV import error", message)
         conn.rollback()
         return False
-        
-    # Save settings
-    settings.setValue("db/CONNECTION_NAME", dlg.cboConnection.currentText())
-    settings.setValue("db/TABLE_NAME", tableName)
-    settings.setValue("db/TXT_NAME", dlg.txtInputFilePath.toPlainText())
-    settings.setValue("db/CSV_NAME", dlg.txtOutputFilePath.toPlainText())    
     
     # Final message
     QMessageBox.information(None, u"Fi procés", u"Procés finalitzat correctament")
